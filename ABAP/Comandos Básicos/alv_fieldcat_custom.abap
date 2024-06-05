@@ -7,6 +7,8 @@ lw_fieldcat-seltext_l = 'Código Compania Aerea'. "Nome que vai aparecer na exib
 APPEND lw_fieldcat TO lt_fieldcat. "Adiciona a linha a uma tabela interna.
 CLEAR lw_fieldcat. "limpa o conteúdo da workarea.
 
+lw_layout-colwidth_optimize = abap_true.
+
 CALL FUNCTION 'REUSE_ALV_GRID_DISPLAY'
   EXPORTING
     i_callback_program = sy-repid
