@@ -1,7 +1,7 @@
 *&---------------------------------------------------------------------------------------*
-*& REPORT zpr_exec_02_bhs.
+*& REPORT zpr_exec_08_bhs.
 *&---------------------------------------------------------------------------------------*
-*& Nome:zpr_exec_02_bhs
+*& Nome:zpr_exec_08_bhs
 *& Tipo: Report
 *& Objetivo: Faça uma rotina que receba dois números e retorne o maior deles (caso os
 *& números sejam iguais retorne o próprio número).
