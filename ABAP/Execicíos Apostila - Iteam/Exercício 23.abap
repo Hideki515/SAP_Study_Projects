@@ -3,26 +3,21 @@
 *&---------------------------------------------------------------------------------------*
 *& Nome:zpr_exec_23_bhs
 *& Tipo: Report
-*& Objetivo: Elaborar um programa ABAP onde deverá ser criada uma tela de seleção com
-*& o campo Centro como seleção múltipla e o campo Chave do calendário de fábrica como
-*& seleção única com o valor default ‘BR’. Os tipos dos campos podem ser encontrados na
-*& tabela T001W.
-*& Selecionar na tabela T001W todos os Centros que estiverem de acordo com o
-*& campo Centro da tela de seleção e que também estejam de acordo com o campo Chave
-*& do calendário de fábrica da tela de seleção, retornando os campos Centro, Nome 1, País
-*& e Região.
-*& Para cada Centro encontrado na tabela T001W, selecionar na tabela MARC os
-*& materiais que foram ampliados para este centro onde o campo Centro relaciona as duas
-*& tabelas, retornando os campos Nº do material e Centro.
-*& Para cada Nº do material encontrado na tabela MARC, selecionar na tabela MAKT
-*& sua Denominação desde que estejam no Idioma ‘PT’.
-*& O campo Nº do material relaciona as duas tabelas, retornando os campos Nº do
-*& material e Denominação.
-*& O relatório deverá imprimir os dados de cada centro bem como todos os materiais
-*& encontrados para cada centro sua denominação.
-*& Ao final da impressão dos materiais deverá ser impressa no relatório a quantidade
-*& de materiais encontrados para cada um dos centros selecionados.
-*& Imprimir os campos Centro, Nome 1, País, Região, Nº do material e Denominação.
+*& Objetivo: Elaborar um programa ABAP onde deverão ser selecionados na tabela VBAK 
+*& as ordens de venda criadas no mês 02/2008, retornando os campos Documento de 
+*& vendas, Data de criação do registro, Tipo de documento de vendas e Emissor da ordem. 
+*& Para cada ordem de venda encontrada na tabela VBAK selecionar na tabela 
+*& VBAP seus itens onde o campo Documento de vendas relaciona as duas tabelas, 
+*& retornando os campos Documento de vendas, Item do documento de vendas, Nº do 
+*& material, Quantidade da ordem acumulada em unidade de venda e Valor líquido do item 
+*& da ordem na moeda do documento. Imprimir todos os itens de cada ordem de venda. 
+*& Na impressão do resultado, efetuar uma quebra no relatório pelo campo Emissor 
+*& da Ordem, onde deverá ser impresso a quantidade de ordens encontrada para cada um 
+*& dos emissores selecionados. 
+*& Imprimir os campos: Emissor da ordem, Tipo de documento de vendas, Data de 
+*& criação do registro, Documento de vendas, Item do documento de vendas, Nº do 
+*& material, Quantidade da ordem acumulada em unidade de venda e Valor líquido do item 
+*& da ordem na moeda do documento.
 *&---------------------------------------------------------------------------------------*
 
 REPORT zpr_exec_23_bhs.
