@@ -7,29 +7,24 @@
 *&---------------------------------------------------------------------*
 *& -> Seleção do local no qual o arquivo está armazenado.
 *&---------------------------------------------------------------------*
-FORM zf_select_file.
+FORM zf_select_file CHANGING p_arq TYPE rlgrap-filename.
   DATA: lt_filetable TYPE filetable. "Variavel local do tipo filetable.
-  DATA: lv_rc        TYPE i. "Variavel local do tipo inteiro.
 
-  "Chama o metodo de janela de seleção de arquivo.
-  CALL METHOD cl_gui_frontend_services=>file_open_dialog
-    EXPORTING
-      window_title = 'Selecione um arquivo' "Nome da janela
+* Esta função é utilizada para buscar o arquivo na sua máquina.
+  CALL FUNCTION 'KD_GET_FILENAME_ON_F4'
     CHANGING
-      file_table   = lt_filetable "Guarda a localização do arquivo.
-      rc           = lv_rc
+      file_name     = p_arq
     EXCEPTIONS
-      OTHERS       = 1.
+      mask_too_long = 1
+      OTHERS        = 2.
 
-  IF sy-subrc = 0. "Verifica senão ocorreu erro ao seleciona o arquivo.
-    READ TABLE lt_filetable INDEX 1 INTO DATA(ls_file).
-    gv_filename = ls_file-filename.
-    MESSAGE 'Arquivo selecionado: &1' TYPE 'S' DISPLAY LIKE 'I'.
-  ELSE.
-    MESSAGE 'Nenhum arquivo selecionado ou ocorreu um erro.' TYPE 'E'.
-  ENDIF.
+  IF sy-subrc <> 0. "Verifica se ocorreu erro.
 
-  p_loc = gv_filename.
+    MESSAGE: text-e05 TYPE 'S' DISPLAY LIKE 'E'. "Mensagem de erro ao selecionar arquivo.
+    LEAVE LIST-PROCESSING. "Volta o processo.
+
+  ENDIF. "FIM IF sy-subrc <> 0.
+
 ENDFORM.
 
 *&---------------------------------------------------------------------*
@@ -37,21 +32,38 @@ ENDFORM.
 *&---------------------------------------------------------------------*
 *& -> Upload do arquivo.
 *&---------------------------------------------------------------------*
+FORM zf_upload_file USING p_arq TYPE rlgrap-filename.
+  DATA: lv_filename TYPE string.
 
-FORM zf_upload_file USING p_filename.
-
+  lv_filename = p_arq.
   "Chama a função que faz o upload do ar  arquivo.
   CALL FUNCTION 'GUI_UPLOAD'
     EXPORTING
-      filename = p_filename "Local do arquivo com nome do arquivo.
+      filename                = lv_filename "Local do arquivo com nome do arquivo.
     TABLES
-      data_tab = it_entrada "Tabela onde os dados dos arquivos serão armazenados
+      data_tab                = it_entrada "Tabela onde os dados dos arquivos serão armazenados
     EXCEPTIONS
-      OTHERS   = 1.
+      file_open_error         = 1
+      file_read_error         = 2
+      no_batch                = 3
+      gui_refuse_filetransfer = 4
+      invalid_type            = 5
+      no_authority            = 6
+      unknown_error           = 7
+      bad_data_format         = 8
+      header_not_allowed      = 9
+      separator_not_allowed   = 10
+      header_too_long         = 11
+      unknown_dp_error        = 12
+      access_denied           = 13
+      dp_out_of_memory        = 14
+      disk_full               = 15
+      dp_timeout              = 16
+      OTHERS                  = 17.
 
   IF sy-subrc <> 0.
-    MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
-            WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+    MESSAGE: text-e02 TYPE 'S' DISPLAY LIKE 'E'. "Mensagem de erro ao fazer upload do arquivo.
+    LEAVE LIST-PROCESSING. "Volta o processo.
   ENDIF.
 ENDFORM.
 
@@ -63,49 +75,21 @@ ENDFORM.
 *&---------------------------------------------------------------------*
 FORM zf_process_file.
 
-  IF rb_csv = 'X'. "Verifica se o radio button da extensão do arquivo csv está selecionado.
-    LOOP AT it_entrada INTO wa_entrada. "Loop na tabela interna passando os valores do laço atual para uma work area
-
-      CLEAR wa_bebida. "Limpa a work area atual.
-
-      SPLIT wa_entrada AT ',' INTO wa_bebida_csv-matnr
-                                   wa_bebida_csv-maktx
-                                   wa_bebida_csv-meins
-                                   wa_bebida_csv-brgew
-                                   wa_bebida_csv-gewei
-                                   wa_bebida_csv-volum
-                                   wa_bebida_csv-voleh. "Separa a linha conforme ',' em seus respectivos campos.
-
-      APPEND wa_bebida_csv TO it_bebida_csv. "Preenche a tabela interna com os dados da work area.
-    ENDLOOP.
-
-    MOVE-CORRESPONDING it_bebida_csv TO it_bebida. "Passa os dados da tabela interna para outra.
-
-  ELSEIF rb_txt = 'X'. "Verifica se o botão de arquivo .txt está selecionado.
+  IF it_entrada IS NOT INITIAL. "Verifica se a tabela está vazia.
 
     LOOP AT it_entrada INTO wa_entrada. "Loop na tabela interna passando os dados da linha atual para uma work area.
 
       CLEAR wa_bebida. "Limpa a work area.
 
-      wa_bebida-matnr = wa_entrada+0(18).   "Pega os valores conforme especificado.
-      wa_bebida-maktx = wa_entrada+18(40).  "Pega os valores conforme especificado.
-      wa_bebida-meins = wa_entrada+58(3).   "Pega os valores conforme especificado.
+      wa_bebida-matnr = wa_entrada-matnr. "Passa o valor da work area de entrada para work area de saída.
+      wa_bebida-maktx = wa_entrada-maktx. "Passa o valor da work area de entrada para work area de saída.
+      wa_bebida-meins = wa_entrada-meins. "Passa o valor da work area de entrada para work area de saída.
+      wa_bebida-brgew = wa_entrada-brgew. "Passa o valor da work area de entrada para work area de saída.
+      wa_bebida-gewei = wa_entrada-gewei. "Passa o valor da work area de entrada para work area de saída.
+      wa_bebida-volum = wa_entrada-volum. "Passa o valor da work area de entrada para work area de saída.
+      wa_bebida-voleh = wa_entrada-voleh. "Passa o valor da work area de entrada para work area de saída.
 
-*      wa_bebida-brgew = wa_entrada+62(16).  "Pega os valores conforme especificado.
-
-      WRITE wa_entrada+62(16) TO wa_bebida-brgew. "Escreve o valor do campo da work area de entrada na work area de saida.
-      CONDENSE wa_bebida-brgew. "Condensa os valores tirando os espaços em branco.
-
-      wa_bebida-brgew = '1000'.  "Pega os valores conforme especificado.
-      wa_bebida-gewei = wa_entrada+79(3).   "Pega os valores conforme especificado.
-
-
-      WRITE wa_entrada+82(16) TO wa_bebida-volum. "Escreve o valor do campo da work area de entrada na work area de saida.
-      CONDENSE wa_bebida-volum NO-GAPS. "Condensa os valores tirando os espaços em branco.
-
-      wa_bebida-voleh = wa_entrada+99(3).   "Pega os valores conforme especificado.
-
-      APPEND wa_bebida TO it_bebida. "Preenche a tabela interna conforme os valores da work area.
+      APPEND wa_bebida TO it_bebida. "Preenche a tabela interna com os valores da work area.
 
     ENDLOOP. "Fim loop it_entrada into wa_entrada.
 
@@ -124,7 +108,7 @@ FORM zf_process_bdc.
 
   LOOP AT it_bebida INTO wa_bebida. "Loop na tabela interna passando os dados do laço atual para uma work area.
 
-    CALL FUNCTION 'ZFM_EXEC_33_BI_BHS'
+    CALL FUNCTION 'ZFM_EXEC_BI_BHS'
       EXPORTING
         i_matnr    = wa_bebida-matnr
         i_maktx    = wa_bebida-maktx
